@@ -1,0 +1,46 @@
+1. 20대 남성 유저 수
+
+select count(distinct uuid) as twenties_male 
+from user_info 
+where birth_year >= 1993 and gender = 'M'
+
+
+2. 전체 기간 이메일 별 가입자 수 비율 
+
+select email, ROUND(count(distinct uuid)/(select count(distinct uuid) from user_info), 2) as rate_user_per_email 
+from user_info 
+group by email 
+
+
+3. 일별 접속 유저 수 추이
+
+select date_id, count(distinct uuid) as dau 
+from reg_log 
+group by 1;
+
+
+4. 일별 미국 접속 유저 수 추이
+
+select date_id, count(distinct uuid) as user_from_us 
+from user_info 
+where country = 'us' 
+group by 1;
+
+
+5. 일별 theme['theme1']의 top3
+
+select theme1, count(theme1) as cnt 
+from (
+select substring_index(substring_index(theme_max_5, '""', 4),'""',-1) as theme1 
+from user_info) a 
+group by theme1 order by 2 desc limit 3;
+
+
+6. 30대 여성 접속 유저의 일별 theme['theme4']별 유저 수
+
+select date_id, theme4, count(distinct uuid) as user_cnt 
+from (
+select uuid, substring_index(substring_index(substring_index(substring_index(theme_max_5, ',', 4), ',', -1), '""', 4), '""', -1) as theme4, date_id 
+from user_info 
+where substring_index(substring_index(theme_max_5, ',', 4), ',', -1) LIKE '%theme4%' and gender = 'F' and birth_year >= 1983 and birth_year < 1993) a 
+group by date_id, theme4;
